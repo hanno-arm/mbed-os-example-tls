@@ -160,6 +160,7 @@ int HelloHttpsClient::run()
     }
 
     /* Print information about the TLS connection */
+#if !defined(MBEDTLS_X509_REMOVE_INFO)
     ret = mbedtls_x509_crt_info(gp_buf, sizeof(gp_buf),
                                 "\r  ", mbedtls_ssl_get_peer_cert(&ssl));
     if (ret < 0) {
@@ -167,10 +168,12 @@ int HelloHttpsClient::run()
         return ret;
     }
     mbedtls_printf("Server certificate:\n%s\n", gp_buf);
+#endif /* MBEDTLS_X509_REMOVE_INFO */
 
     /* Ensure certificate verification was successful */
     flags = mbedtls_ssl_get_verify_result(&ssl);
     if (flags != 0) {
+#if !defined(MBEDTLS_X509_REMOVE_INFO)
         ret = mbedtls_x509_crt_verify_info(gp_buf, sizeof(gp_buf),
                                            "\r  ! ", flags);
         if (ret < 0) {
@@ -182,6 +185,10 @@ int HelloHttpsClient::run()
                            "\n%s\n", flags, gp_buf);
             return -1;
         }
+#else /* !MBEDTLS_X509_REMOVE_INFO */
+        mbedtls_printf("Certificate verification failed (flags %lu):"
+                       "\n", flags );
+#endif /* MBEDTLS_X509_REMOVE_INFO */
     } else {
         mbedtls_printf("Certificate verification passed\n");
     }
@@ -368,6 +375,7 @@ int HelloHttpsClient::sslVerify(void *ctx, mbedtls_x509_crt *crt, int depth,
 #if HELLO_HTTPS_CLIENT_DEBUG_LEVEL > 0
     HelloHttpsClient *client = static_cast<HelloHttpsClient *>(ctx);
 
+#if !defined(MBEDTLS_X509_REMOVE_INFO)
     ret = mbedtls_x509_crt_info(client->gp_buf, sizeof(gp_buf), "\r  ", crt);
     if (ret < 0) {
         mbedtls_printf("mbedtls_x509_crt_info() returned -0x%04X\n", -ret);
@@ -376,6 +384,7 @@ int HelloHttpsClient::sslVerify(void *ctx, mbedtls_x509_crt *crt, int depth,
         mbedtls_printf("Verifying certificate at depth %d:\n%s\n",
                        depth, client->gp_buf);
     }
+#endif /* !MBEDTLS_X509_REMOVE_INFO */
 #endif /* HELLO_HTTPS_CLIENT_DEBUG_LEVEL > 0 */
 
     return ret;
