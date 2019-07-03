@@ -36,7 +36,7 @@
 /**
  * Change to a number between 1 and 4 to debug the TLS connection
  */
-#define HELLO_HTTPS_CLIENT_DEBUG_LEVEL  0
+#define HELLO_HTTPS_CLIENT_DEBUG_LEVEL  4
 
 /**
  * Length (in bytes) for generic buffers used to hold debug or HTTP
